@@ -26,7 +26,7 @@ struct instruction{
 };
 
 //Use unique_ptr for unit tests
-// std::unique_ptr<instruction> disassemble(int32_t machineCode);
-void disassemble(int32_t machineCode);
+std::unique_ptr<instruction> disassemble(int32_t machineCode);
+// void disassemble(int32_t machineCode);
 
 #endif

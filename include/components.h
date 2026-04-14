@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 #include <array>
+#include <memory>
+#include "disasm.h"
 
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
@@ -44,6 +46,8 @@ struct ControlSignals {
 class ControlUnit {
     public:
         ControlSignals condSignals;
+
+        void setSignals(instruction insn);
 };
 
 #endif

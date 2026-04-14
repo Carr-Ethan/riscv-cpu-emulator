@@ -282,8 +282,8 @@ static void disasmUJ(const std::unique_ptr<instruction>& insn){
 }
 
 //return unique_ptr to use unit tests
-// std::unique_ptr<instruction> disassemble(int32_t machineCode){
-void disassemble(int32_t machineCode){
+// void disassemble(int32_t machineCode){
+std::unique_ptr<instruction> disassemble(int32_t machineCode){
     const int32_t opcode = getOpcode(machineCode);
 
     std::unique_ptr<instruction> insn = std::make_unique<instruction>();
@@ -309,5 +309,5 @@ void disassemble(int32_t machineCode){
         insn->insnType = type::UJ;
         disasmUJ(insn);
     }
-    // return insn;
+    return insn;
 }
