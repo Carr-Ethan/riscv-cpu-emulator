@@ -1,2 +1,3 @@
 src/disasm
+src/cpu
 test/test
