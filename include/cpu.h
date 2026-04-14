@@ -1,5 +1,9 @@
 #pragma once
 #include "components.h"
+#include <vector>
+#include <string>
+#include <cstdint>
+
 #ifndef CPU_H
 #define CPU_H
 
@@ -8,12 +12,14 @@ class CPU {
         uint32_t pc;
         uint32_t global_ticks;
 
+        std::vector<std::string> iMem;
         ALU alu;
         RegisterFile rf;
         ControlUnit control;
         Memory memory;
         
         CPU();
+        int32_t fetch(std::vector<std::string> iMem, int32_t pc);
         void tick();
 };
 
