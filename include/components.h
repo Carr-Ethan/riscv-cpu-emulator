@@ -1,4 +1,5 @@
 #pragma once
+#include "../include/constant.h"
 #include <cstdint>
 #include <array>
 #include <memory>
@@ -14,7 +15,7 @@ class ALU {
             bool aluZero;
         };
 
-        result execute(int32_t opA, int32_t opB, int8_t aluCtrl);
+        result execute(int32_t opA, int32_t opB, aluCtrlOp aluCtrl);
 };
 
 class RegisterFile {
@@ -48,6 +49,8 @@ class ControlUnit {
         ControlSignals condSignals;
 
         void setSignals(instruction insn);
+
+        aluCtrlOp aluCtrl(int8_t ALUOp, instruction insn);
 };
 
 #endif

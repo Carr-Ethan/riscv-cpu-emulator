@@ -1,10 +1,17 @@
 #pragma once
+#include <cstdint>
 #include <string>
-#include "../include/constant.h"
 #include <unordered_map>
 
 #ifndef CONSTANT_H
 #define CONSTANT_H
+
+enum class aluCtrlOp : int8_t {
+    ADD = 0b0010,
+    SUB = 0b0110,
+    AND = 0b0000,
+    OR  = 0b0001
+};
 
 enum class type : uint8_t{
     R,
