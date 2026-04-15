@@ -64,10 +64,10 @@ int32_t RegisterFile::read(int8_t reg){
 void RegisterFile::write(int8_t reg, int32_t val){}
 
 int32_t Memory::load(int8_t address){
-    return dMem.at(address);
+    return dMem.at(address >> 2);
 }
 void Memory::store(int8_t address, int32_t value){
-    dMem.at(address) = value;
+    dMem.at(address >> 2) = value;
 }
 
 void ControlUnit::setSignals(instruction insn){
