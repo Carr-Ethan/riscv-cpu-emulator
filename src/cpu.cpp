@@ -44,8 +44,26 @@ void CPU::tick(){
 
     // ===== MEM ===== //
 
+    bool memRead = control.condSignals.memRead;
+    bool memWrite = control.condSignals.memWrite;
 
+    int32_t readDataDmem = 0;
+
+    if (memWrite) {
+        memory.store((int8_t)aluRes.val, readData2);
+        pc = next_pc;
+        return;
+    }
+
+    if (memRead) {
+        readDataDmem = memory.load((int8_t)aluRes.val);
+    }
+
+    int32_t resultData = control.condSignals.memToReg ? readDataDmem : aluRes.val;
 
     // ===== WB ===== //
+    
+    rf.write(insn->rd, resultData);
 
+    pc = next_pc;
 }

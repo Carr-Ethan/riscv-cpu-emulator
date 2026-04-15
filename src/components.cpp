@@ -61,12 +61,14 @@ ALU::result  ALU::execute(int32_t opA, int32_t opB, aluCtrlOp aluCtrl){
 int32_t RegisterFile::read(int8_t reg){
     return 0;
 }
-void RegisterFile::write(int8_t reg){}
+void RegisterFile::write(int8_t reg, int32_t val){}
 
 int32_t Memory::load(int8_t address){
-    return 0;
+    return dMem.at(address);
 }
-void Memory::store(int8_t address){}
+void Memory::store(int8_t address, int32_t value){
+    dMem.at(address) = value;
+}
 
 void ControlUnit::setSignals(instruction insn){
     //logic goes here
