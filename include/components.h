@@ -1,4 +1,5 @@
 #pragma once
+#include "../include/constant.h"
 #include <cstdint>
 #include <array>
 #include <memory>
@@ -14,7 +15,7 @@ class ALU {
             bool aluZero;
         };
 
-        result execute(int32_t opA, int32_t opB, int8_t aluCtrl);
+        result execute(int32_t opA, int32_t opB, aluCtrlOp aluCtrl);
 };
 
 class RegisterFile {
@@ -22,7 +23,7 @@ class RegisterFile {
         std::array<int8_t, 32> registerFile{}; //initialized to zero
         
         int32_t read(int8_t reg);
-        void write(int8_t reg);
+        void write(int8_t reg, int32_t val);
 };
 
 class Memory {
@@ -30,7 +31,7 @@ class Memory {
         std::array<int32_t, 32> dMem{};
 
         int32_t load(int8_t address);
-        void store (int8_t address);
+        void store (int8_t address, int32_t value);
 };
 
 struct ControlSignals {
@@ -48,6 +49,8 @@ class ControlUnit {
         ControlSignals condSignals;
 
         void setSignals(instruction insn);
+
+        aluCtrlOp aluCtrl(int8_t ALUOp, instruction insn);
 };
 
 #endif
