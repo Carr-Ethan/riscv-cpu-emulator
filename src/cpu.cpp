@@ -12,25 +12,23 @@ CPU::CPU(){
 
 int32_t CPU::fetch(std::vector<std::string> iMem, int32_t pc){
     int32_t machineCode = std::stol(iMem[pc/4], nullptr, 2);
-    std::cout << machineCode << std::endl;
-    int32_t next_pc = pc + 4;
 
+    next_pc = pc + 4;
     return machineCode;
 }
 
 std::unique_ptr<instruction> CPU::decode(int32_t machineCode) {
-    std::unique_ptr<instruction> insn = disassemble(machineCode);
-    control.setSignals(*insn); //needs to be implemented
+    std::unique_ptr<instruction> insn = decoder.disassemble(machineCode, control);
     return insn;
 }
 
 ALU::result CPU::execute(instruction insn, int32_t readData1, int32_t readData2) {
-    int32_t aluOpB = control.condSignals.aluSrc ? insn.immi : readData2;
+    int32_t aluOpB = control.ctrlSignals.aluSrc ? insn.immi : readData2;
 
-    aluCtrlOp aluCtrl = control.aluCtrl(control.condSignals.ALUOP, insn);
+    aluCtrlOp aluCtrl = control.aluCtrl(control.ctrlSignals.ALUOP, insn);
     ALU::result aluRes = alu.execute(readData1, aluOpB, aluCtrl);
 
-    bool branch = control.condSignals.branch && aluRes.aluZero;
+    bool branch = control.ctrlSignals.branch && aluRes.aluZero;
     int32_t branchTarget = pc + insn.immi;
 
     if (branch) next_pc = branchTarget;
@@ -40,30 +38,44 @@ ALU::result CPU::execute(instruction insn, int32_t readData1, int32_t readData2)
 }
 
 int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
-    bool memRead = control.condSignals.memRead;
-    bool memWrite = control.condSignals.memWrite;
+    bool memRead = control.ctrlSignals.memRead;
+    bool memWrite = control.ctrlSignals.memWrite;
 
     int32_t readDataDmem = 0;
 
     if (memWrite) {
-        memory.store((int8_t)aluRes.val, readData2);
-        ++global_ticks;
+        memory.store(static_cast<int8_t>(aluRes.val), readData2);
         return 0;
     }
 
     if (memRead) {
-        readDataDmem = memory.load((int8_t)aluRes.val);
+        readDataDmem = memory.load(static_cast<int8_t>(aluRes.val));
     }
 
-    return control.condSignals.memToReg ? readDataDmem : aluRes.val;
+
+    return control.ctrlSignals.memToReg ? readDataDmem : aluRes.val;
 }
 
 void CPU::writeback(int32_t rd, int32_t val) {
-    rf.write(rd, val);
-    ++global_ticks;
+    if(control.ctrlSignals.memToReg == true){
+        std::cout << "x" << rd << " is modified to 0x" << std::hex << val << std::dec << std::endl;
+        rf.write(rd, val);
+    }
+}
+
+void CPU::initTest1(){
+    rf.write(1, 0x20);
+    rf.write(2, 0x5);
+    rf.write(10, 0x70);
+    rf.write(11, 0x4);
+
+    memory.store(0x70, 0x5);
+    memory.store(0x74, 0x10);
 }
 
 void CPU::tick(){
+    ++global_ticks;
+    std::cout << "\ntotal_clock_cycles " << global_ticks << ":\n";
     int32_t machineCode = CPU::fetch(iMem, pc);
 
     std::unique_ptr<instruction> insn = CPU::decode(machineCode);
@@ -72,7 +84,9 @@ void CPU::tick(){
 
     ALU::result aluRes = execute(*insn, readData1, readData2);
 
-    int32_t resultData = mem(aluRes, readData2);
-
+    int32_t resultData = mem(aluRes, insn->rd);
+    std::cout << control.ctrlSignals.memToReg << "\n";
     writeback(insn->rd, resultData);
+
+    std::cout << "pc is modified to " << std::hex << pc << std::dec << "\n";
 }

@@ -1,9 +1,9 @@
 #include "../include/constant.h"
 #include "../include/components.h"
 #include "../include/disasm.h"
+#include "../include/cpu.h"
 #include <cstdint>
 #include <stdexcept>
-#include <format>
 #include <memory>
 
 aluCtrlOp ControlUnit::aluCtrl(int8_t ALUOp, instruction insn) {
@@ -59,9 +59,11 @@ ALU::result  ALU::execute(int32_t opA, int32_t opB, aluCtrlOp aluCtrl){
 }
 
 int32_t RegisterFile::read(int8_t reg){
-    return 0;
+    return registerFile.at(reg);
 }
-void RegisterFile::write(int8_t reg, int32_t val){}
+void RegisterFile::write(int8_t reg, int32_t val){
+    registerFile.at(reg) = val;
+}
 
 int32_t Memory::load(int8_t address){
     return dMem.at(address >> 2);
@@ -69,8 +71,3 @@ int32_t Memory::load(int8_t address){
 void Memory::store(int8_t address, int32_t value){
     dMem.at(address >> 2) = value;
 }
-
-void ControlUnit::setSignals(instruction insn){
-    //logic goes here
-}
-

@@ -1,5 +1,6 @@
 #pragma once
 #include "components.h"
+#include "disasm.h"
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -18,6 +19,7 @@ class CPU {
         RegisterFile rf;
         ControlUnit control;
         Memory memory;
+        Decoder decoder;
 
 
         
@@ -28,6 +30,10 @@ class CPU {
         int32_t mem(ALU::result aluRes, int32_t readData2);
         void writeback(int32_t rd, int32_t val);
         void tick();
+
+
+        //TEST FUNCTIONS
+        void initTest1();
 };
 
 #endif

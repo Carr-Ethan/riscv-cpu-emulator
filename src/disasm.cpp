@@ -5,6 +5,7 @@
 #include <cassert>
 #include "../include/disasm.h"
 #include "../include/constant.h"
+#include "../include/components.h"
 
 static int32_t getOpcode(const int32_t raw){
     return (raw & BIT_MASK_7);
@@ -104,9 +105,18 @@ static void printInsn(const std::unique_ptr<instruction>& insn){
     }
 }
 
-static void disasmR(const std::unique_ptr<instruction>& insn){
+static void disasmR(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl){
     insn->funct3 = getFunct3(insn->machineCode);
     insn->funct7 = getFunct7(insn->machineCode);
+
+    //set control signals
+    ctrl.ctrlSignals.regWrite = true;
+    ctrl.ctrlSignals.memToReg = false;
+    ctrl.ctrlSignals.memRead = false;
+    ctrl.ctrlSignals.aluSrc = false;
+    ctrl.ctrlSignals.branch = false;
+    ctrl.ctrlSignals.memWrite = false;
+    ctrl.ctrlSignals.ALUOP = 0b00;
 
     switch (insn->funct3)
     {
@@ -152,13 +162,22 @@ static void disasmR(const std::unique_ptr<instruction>& insn){
     insn->rs1 = getRs1(insn->machineCode);
     insn->rs2 = getRs2(insn->machineCode);
     insn->rd = getRd(insn->machineCode);
-    printInsn(insn);
 }
 
-static void disasmI(const std::unique_ptr<instruction>& insn, const int32_t opcode){
+static void disasmI(const std::unique_ptr<instruction>& insn, const int32_t opcode, ControlUnit &ctrl){
     insn->funct3 = getFunct3(insn->machineCode);
     insn->immi = getImmi_I(insn->machineCode);
+    
+    ctrl.ctrlSignals.regWrite = true;
+    ctrl.ctrlSignals.aluSrc = true;
+    ctrl.ctrlSignals.branch = false;
+    ctrl.ctrlSignals.memWrite = false;
+
+
     if(opcode == 0x3){
+        ctrl.ctrlSignals.memToReg = true;
+        ctrl.ctrlSignals.memRead = true;
+        ctrl.ctrlSignals.ALUOP = 0b00;
         switch(insn->funct3){
             case 0x0:
                 insn->operation = mnemonic::LB;
@@ -175,6 +194,9 @@ static void disasmI(const std::unique_ptr<instruction>& insn, const int32_t opco
         }
     }
     else if (opcode == 0x13){
+        ctrl.ctrlSignals.memToReg = false;
+        ctrl.ctrlSignals.memRead = false;
+        ctrl.ctrlSignals.ALUOP = 0b10;
         switch (insn->funct3)
         {
         case 0x0:
@@ -220,15 +242,24 @@ static void disasmI(const std::unique_ptr<instruction>& insn, const int32_t opco
         }
     }
     else if (opcode == 0x67){
+        //NEED TO SET THE CONTROL SIGNALS, WILL CROSS THE ROAD LATER
         insn->operation = mnemonic::JALR;
     }
     insn->rs1 = getRs1(insn->machineCode);
     insn->rd = getRd(insn->machineCode);
-    printInsn(insn);
 }
 
-static void disasmS(const std::unique_ptr<instruction>& insn){
+static void disasmS(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl){
     insn->funct3 = getFunct3(insn->machineCode);
+
+    ctrl.ctrlSignals.regWrite = false;
+    ctrl.ctrlSignals.memToReg = false;
+    ctrl.ctrlSignals.memRead = true;
+    ctrl.ctrlSignals.aluSrc = true;
+    ctrl.ctrlSignals.branch = false;
+    ctrl.ctrlSignals.memWrite = true;
+    ctrl.ctrlSignals.ALUOP = 0b00;
+
     switch (insn->funct3)
     {
     case 0x0:
@@ -246,11 +277,19 @@ static void disasmS(const std::unique_ptr<instruction>& insn){
     insn->rs1 = getRs1(insn->machineCode);
     insn->rs2 = getRs2(insn->machineCode);
     insn->immi = getImmi_S(insn->machineCode);
-    printInsn(insn);
 }
 
-static void disasmSB(const std::unique_ptr<instruction>& insn){
+static void disasmSB(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl){
     insn->funct3 = getFunct3(insn->machineCode);
+
+    ctrl.ctrlSignals.regWrite = false;
+    ctrl.ctrlSignals.memToReg = false;
+    ctrl.ctrlSignals.memRead = false;
+    ctrl.ctrlSignals.aluSrc = true;
+    ctrl.ctrlSignals.branch = true;
+    ctrl.ctrlSignals.memWrite = true;
+    ctrl.ctrlSignals.ALUOP = 0b01;
+
     switch (insn->funct3)
     {
     case 0x0:
@@ -271,19 +310,18 @@ static void disasmSB(const std::unique_ptr<instruction>& insn){
     insn->rs1 = getRs1(insn->machineCode);
     insn->rs2 = getRs2(insn->machineCode);
     insn->immi = getImmi_SB(insn->machineCode);
-    printInsn(insn);
 }
 
-static void disasmUJ(const std::unique_ptr<instruction>& insn){
+static void disasmUJ(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl){
     insn->operation = mnemonic::JAL;
     insn->rd = getRd(insn->machineCode);
     insn->immi = getImmi_UJ(insn->machineCode);
-    printInsn(insn);
+    //WILL HAVE TO DO CONTROL SIGNALS LATER
 }
 
 //return unique_ptr to use unit tests
 // void disassemble(int32_t machineCode){
-std::unique_ptr<instruction> disassemble(int32_t machineCode){
+std::unique_ptr<instruction> Decoder::disassemble(int32_t machineCode, ControlUnit &ctrl){
     const int32_t opcode = getOpcode(machineCode);
 
     std::unique_ptr<instruction> insn = std::make_unique<instruction>();
@@ -291,23 +329,23 @@ std::unique_ptr<instruction> disassemble(int32_t machineCode){
 
     if(opcode == 0x33){
         insn->insnType = type::R;
-        disasmR(insn);
+        disasmR(insn, ctrl);
     }
     else if(opcode == 0x3 || opcode == 0x13 || opcode == 0x67){
         insn->insnType = type::I;
-        disasmI(insn, opcode);
+        disasmI(insn, opcode, ctrl);
     }
     else if(opcode == 0x23){
         insn->insnType = type::S;
-        disasmS(insn);
+        disasmS(insn, ctrl);
     }
     else if(opcode == 0x63){
         insn->insnType = type::SB;
-        disasmSB(insn);
+        disasmSB(insn, ctrl);
     }
     else if(opcode == 0x6F){
         insn->insnType = type::UJ;
-        disasmUJ(insn);
+        disasmUJ(insn, ctrl);
     }
     return insn;
 }

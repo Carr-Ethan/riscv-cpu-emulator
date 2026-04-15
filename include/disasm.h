@@ -15,6 +15,9 @@
 #define BIT_MASK_11 0x7FF
 #define BIT_MASK_22 0x3FFFFF
 
+struct instruction; 
+class ControlUnit;
+
 
 struct instruction{
     int32_t machineCode;
@@ -25,8 +28,10 @@ struct instruction{
     int32_t funct3, funct7;
 };
 
-//Use unique_ptr for unit tests
-std::unique_ptr<instruction> disassemble(int32_t machineCode);
-// void disassemble(int32_t machineCode);
+class Decoder {
+    public:
+        std::unique_ptr<instruction> disassemble(int32_t machineCode, ControlUnit &ctrl);
+};
+
 
 #endif

@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/constant.h"
+#include "constant.h"
 #include <cstdint>
 #include <array>
 #include <memory>
@@ -20,7 +20,7 @@ class ALU {
 
 class RegisterFile {
     public: 
-        std::array<int8_t, 32> registerFile{}; //initialized to zero
+        std::array<int32_t, 32> registerFile{}; //initialized to zero
         
         int32_t read(int8_t reg);
         void write(int8_t reg, int32_t val);
@@ -40,15 +40,13 @@ struct ControlSignals {
     bool memWrite;
     bool branch;
     bool memRead;
-    int8_t aluSrc;
+    bool aluSrc;
     int8_t ALUOP;
 };
 
 class ControlUnit {
     public:
-        ControlSignals condSignals;
-
-        void setSignals(instruction insn);
+        ControlSignals ctrlSignals;
 
         aluCtrlOp aluCtrl(int8_t ALUOp, instruction insn);
 };

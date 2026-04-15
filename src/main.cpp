@@ -25,7 +25,8 @@ int main(){
 
     CPU cpu;
     cpu.iMem = iMem;
-
+    
+    cpu.initTest1();
     while(true){
         cpu.tick();
         if(cpu.pc >= cpu.iMem.size()*4) break;
