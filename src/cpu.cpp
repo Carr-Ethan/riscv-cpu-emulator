@@ -14,6 +14,11 @@ int32_t CPU::fetch(std::vector<std::string> iMem, int32_t pc){
     return std::stol(iMem[pc/4], nullptr, 2);
 }
 
+void CPU::writeback(int32_t rd, int32_t val) {
+    rf.write(rd, val);
+    ++global_ticks;
+}
+
 void CPU::tick(){
     // ===== IF ===== //
 
@@ -41,6 +46,7 @@ void CPU::tick(){
     int32_t branchTarget = pc + insn->immi;
 
     if (branch) next_pc = branchTarget;
+    pc = next_pc;
 
     // ===== MEM ===== //
 
@@ -51,7 +57,7 @@ void CPU::tick(){
 
     if (memWrite) {
         memory.store((int8_t)aluRes.val, readData2);
-        pc = next_pc;
+        ++global_ticks;
         return;
     }
 
@@ -62,8 +68,6 @@ void CPU::tick(){
     int32_t resultData = control.condSignals.memToReg ? readDataDmem : aluRes.val;
 
     // ===== WB ===== //
-    
-    rf.write(insn->rd, resultData);
 
-    pc = next_pc;
+    writeback(insn->rd, resultData);
 }

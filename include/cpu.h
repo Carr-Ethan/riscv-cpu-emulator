@@ -20,6 +20,7 @@ class CPU {
         
         CPU();
         int32_t fetch(std::vector<std::string> iMem, int32_t pc);
+        void writeback(int32_t rd, int32_t val);
         void tick();
 };
 
