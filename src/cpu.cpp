@@ -57,7 +57,7 @@ int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
 }
 
 void CPU::writeback(int32_t rd, int32_t val) {
-    if(control.ctrlSignals.memToReg == true){
+    if(control.ctrlSignals.regWrite == true){
         std::cout << "x" << rd << " is modified to 0x" << std::hex << val << std::dec << std::endl;
         rf.write(rd, val);
     }
