@@ -18,7 +18,6 @@ int main(){
         std::string str;
         while(getline(file, str)){
             iMem.push_back(str);
-            std::cout << str << std::endl;
         }
         file.close();
     }

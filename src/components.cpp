@@ -51,7 +51,6 @@ ALU::result  ALU::execute(int32_t opA, int32_t opB, aluCtrlOp aluCtrl){
             break;
         }
         case aluCtrlOp::SUB: { 
-            std::cout << opA << " " << opB << std::endl;
             res.val = opA - opB;
             break;
         }

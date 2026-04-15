@@ -45,13 +45,13 @@ int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
 
     if (memWrite) {
         memory.store(static_cast<int8_t>(aluRes.val), readData2);
+        std::cout << "memory 0x" << std::hex << aluRes.val << " is modified to 0x" << readData2 << "\n";
         return 0;
     }
 
     if (memRead) {
         readDataDmem = memory.load(static_cast<int8_t>(aluRes.val));
     }
-
 
     return control.ctrlSignals.memToReg ? readDataDmem : aluRes.val;
 }
@@ -75,7 +75,7 @@ void CPU::initTest1(){
 
 void CPU::tick(){
     ++global_ticks;
-    std::cout << "\ntotal_clock_cycles " << global_ticks << ":\n";
+    std::cout << "total_clock_cycles " << global_ticks << ":\n";
     int32_t machineCode = CPU::fetch(iMem, pc);
 
     std::unique_ptr<instruction> insn = CPU::decode(machineCode);
@@ -84,9 +84,8 @@ void CPU::tick(){
 
     ALU::result aluRes = execute(*insn, readData1, readData2);
 
-    int32_t resultData = mem(aluRes, insn->rd);
-    std::cout << control.ctrlSignals.memToReg << "\n";
+    int32_t resultData = mem(aluRes, readData2);
     writeback(insn->rd, resultData);
 
-    std::cout << "pc is modified to " << std::hex << pc << std::dec << "\n";
+    std::cout << "pc is modified to 0x" << std::hex << pc << std::dec << "\n\n";
 }

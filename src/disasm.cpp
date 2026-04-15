@@ -287,7 +287,7 @@ static void disasmSB(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl
     ctrl.ctrlSignals.memRead = false;
     ctrl.ctrlSignals.aluSrc = true;
     ctrl.ctrlSignals.branch = true;
-    ctrl.ctrlSignals.memWrite = true;
+    ctrl.ctrlSignals.memWrite = false;
     ctrl.ctrlSignals.ALUOP = 0b01;
 
     switch (insn->funct3)
@@ -347,6 +347,6 @@ std::unique_ptr<instruction> Decoder::disassemble(int32_t machineCode, ControlUn
         insn->insnType = type::UJ;
         disasmUJ(insn, ctrl);
     }
-    printInsn(insn);
+    // printInsn(insn);
     return insn;
 }
