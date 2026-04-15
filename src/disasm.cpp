@@ -116,7 +116,7 @@ static void disasmR(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl)
     ctrl.ctrlSignals.aluSrc = false;
     ctrl.ctrlSignals.branch = false;
     ctrl.ctrlSignals.memWrite = false;
-    ctrl.ctrlSignals.ALUOP = 0b00;
+    ctrl.ctrlSignals.ALUOP = 0b10;
 
     switch (insn->funct3)
     {

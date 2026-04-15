@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <memory>
+#include <iostream>
 
 aluCtrlOp ControlUnit::aluCtrl(int8_t ALUOp, instruction insn) {
     switch (ALUOp) {
@@ -16,8 +17,9 @@ aluCtrlOp ControlUnit::aluCtrl(int8_t ALUOp, instruction insn) {
         }
         case 0b10: { // R-type
             if (insn.funct3 == 0b000) {
-                if (insn.insnType == type::R && (insn.funct7 & 0x20))
+                if (insn.insnType == type::R && (insn.funct7 & 0x20)){
                     return aluCtrlOp::SUB;
+                }
                 else return aluCtrlOp::ADD;
             } else {
                 if (insn.funct3 == 0b111) return aluCtrlOp::AND;
@@ -49,6 +51,7 @@ ALU::result  ALU::execute(int32_t opA, int32_t opB, aluCtrlOp aluCtrl){
             break;
         }
         case aluCtrlOp::SUB: { 
+            std::cout << opA << " " << opB << std::endl;
             res.val = opA - opB;
             break;
         }
