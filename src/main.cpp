@@ -34,6 +34,8 @@ int main(){
         if(cpuA.pc >= cpuA.iMem.size()*4) break;
     }
 
+    std::cout << "program terminated:\ntotal execution time is " << cpuA.global_ticks << " cycles" << std::endl;
+
     file.open(instructionFile2);
     std::vector<std::string> iMem2;
 
@@ -55,5 +57,8 @@ int main(){
         cpuB.tick();
         if(cpuB.pc >= cpuB.iMem.size()*4) break;
     }
+
+    std::cout << "program terminated:\ntotal execution time is " << cpuB.global_ticks << " cycles" << std::endl;
+
     return 0;
 }
