@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <memory>
 
+#define ra 1
+
 CPU::CPU(){
     pc = 0;
 }
@@ -23,37 +25,46 @@ std::unique_ptr<instruction> CPU::decode(int32_t machineCode) {
 }
 
 ALU::result CPU::execute(instruction insn, int32_t readData1, int32_t readData2) {
-    int32_t aluOpB = control.ctrlSignals.aluSrc ? insn.immi : readData2;
+    int32_t aluOpB = control.ctrlSignals.aluBSrc ? insn.immi : readData2;
+    int32_t aluOpA = control.ctrlSignals.aluASrc ? readData1 : pc;
 
     aluCtrlOp aluCtrl = control.aluCtrl(control.ctrlSignals.ALUOP, insn);
     ALU::result aluRes = alu.execute(readData1, aluOpB, aluCtrl);
 
-    bool branch = control.ctrlSignals.branch && aluRes.aluZero;
+    bool branch = static_cast<bool>(control.ctrlSignals.branch) && aluRes.aluZero;
     int32_t branchTarget = pc + insn.immi;
 
     if (branch) next_pc = branchTarget;
-    pc = next_pc;
-
     return aluRes;
 }
 
 int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
-    bool memRead = control.ctrlSignals.memRead;
-    bool memWrite = control.ctrlSignals.memWrite;
+    int8_t memRead = control.ctrlSignals.memRead;
+    int8_t memWrite = control.ctrlSignals.memWrite;
 
     int32_t readDataDmem = 0;
 
-    if (memWrite) {
+    if (memWrite == 1) {
         memory.store(static_cast<int8_t>(aluRes.val), readData2);
         std::cout << "memory 0x" << std::hex << aluRes.val << " is modified to 0x" << readData2 << "\n";
         return 0;
     }
 
-    if (memRead) {
+
+    if (memRead == 1) {
         readDataDmem = memory.load(static_cast<int8_t>(aluRes.val));
     }
 
-    return control.ctrlSignals.memToReg ? readDataDmem : aluRes.val;
+
+    if(control.ctrlSignals.memToReg == 0){
+        return readDataDmem;
+    }
+    else if (control.ctrlSignals.memToReg == 1){
+        return aluRes.val;
+    }
+    else {
+        return pc + 4;
+    }
 }
 
 void CPU::writeback(int32_t rd, int32_t val) {
@@ -61,6 +72,7 @@ void CPU::writeback(int32_t rd, int32_t val) {
         std::cout << "x" << rd << " is modified to 0x" << std::hex << val << std::dec << std::endl;
         rf.write(rd, val);
     }
+    pc = next_pc;
 }
 
 void CPU::initTest1(){

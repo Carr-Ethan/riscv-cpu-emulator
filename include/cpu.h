@@ -24,16 +24,17 @@ class CPU {
 
         
         CPU();
+        void tick();
+
+        //TEST FUNCTIONS
+        void initTest1();
+
+    private:
         int32_t fetch(std::vector<std::string> iMem, int32_t pc);
         std::unique_ptr<instruction> decode(int32_t machineCode);
         ALU::result execute(instruction insn, int32_t readData1, int32_t readData2);
         int32_t mem(ALU::result aluRes, int32_t readData2);
         void writeback(int32_t rd, int32_t val);
-        void tick();
-
-
-        //TEST FUNCTIONS
-        void initTest1();
-};
+}; 
 
 #endif

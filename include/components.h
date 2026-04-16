@@ -35,12 +35,13 @@ class Memory {
 };
 
 struct ControlSignals {
-    bool regWrite;
-    bool memToReg;
-    bool memWrite;
-    bool branch;
-    bool memRead;
-    bool aluSrc;
+    int8_t regWrite;
+    int8_t memToReg;
+    int8_t memWrite;
+    int8_t branch;
+    int8_t memRead;
+    int8_t aluASrc;
+    int8_t aluBSrc;
     int8_t ALUOP;
 };
 
