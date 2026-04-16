@@ -28,6 +28,7 @@ class CPU {
 
         //TEST FUNCTIONS
         void initTest1();
+        void initTest2();
 
     private:
         int32_t fetch(std::vector<std::string> iMem, int32_t pc);

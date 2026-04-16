@@ -10,6 +10,7 @@
 
 CPU::CPU(){
     pc = 0;
+    global_ticks = 0;
 }
 
 int32_t CPU::fetch(std::vector<std::string> iMem, int32_t pc){
@@ -83,6 +84,14 @@ void CPU::initTest1(){
 
     memory.store(0x70, 0x5);
     memory.store(0x74, 0x10);
+}
+
+void CPU::initTest2(){
+    rf.write(8, 0x20);
+    rf.write(10, 0x5);
+    rf.write(11, 0x2);
+    rf.write(12, 0xa);
+    rf.write(13, 0xf);
 }
 
 void CPU::tick(){
