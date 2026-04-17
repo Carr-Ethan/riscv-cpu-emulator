@@ -6,8 +6,6 @@
 #include <cstdint>
 #include <memory>
 
-#define ra 1
-
 CPU::CPU(){
     pc = 0;
     global_ticks = 0;
@@ -27,15 +25,21 @@ std::unique_ptr<instruction> CPU::decode(int32_t machineCode) {
 
 ALU::result CPU::execute(instruction insn, int32_t readData1, int32_t readData2) {
     int32_t aluOpB = control.ctrlSignals.aluBSrc ? insn.immi : readData2;
-    int32_t aluOpA = control.ctrlSignals.aluASrc ? readData1 : pc;
+    int32_t aluOpA = control.ctrlSignals.aluASrc ? pc : readData1;
 
     aluCtrlOp aluCtrl = control.aluCtrl(control.ctrlSignals.ALUOP, insn);
-    ALU::result aluRes = alu.execute(readData1, aluOpB, aluCtrl);
-
+    ALU::result aluRes = alu.execute(aluOpA, aluOpB, aluCtrl);
     bool branch = static_cast<bool>(control.ctrlSignals.branch) && aluRes.aluZero;
-    int32_t branchTarget = pc + insn.immi;
 
-    if (branch) next_pc = branchTarget;
+
+    if(branch){
+        next_pc = pc + insn.immi;
+    }
+    if(control.ctrlSignals.branch == 2){
+        next_pc = aluRes.val;
+    }
+
+    std::cout << "next_pc " << next_pc << std::endl;
     return aluRes;
 }
 
@@ -55,12 +59,13 @@ int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
     if (memRead == 1) {
         readDataDmem = memory.load(static_cast<int8_t>(aluRes.val));
     }
+    std::cout << "aluRes: " << aluRes.val << std::endl;
 
 
-    if(control.ctrlSignals.memToReg == 0){
+    if(control.ctrlSignals.WBSel == 0){
         return readDataDmem;
     }
-    else if (control.ctrlSignals.memToReg == 1){
+    else if (control.ctrlSignals.WBSel == 1){
         return aluRes.val;
     }
     else {

@@ -56,7 +56,7 @@ ALU::result  ALU::execute(int32_t opA, int32_t opB, aluCtrlOp aluCtrl){
         }
     }
 
-    res.aluZero = res.val == 0;
+    res.aluZero = (res.val == 0);
     return res;
 }
 

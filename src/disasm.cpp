@@ -111,7 +111,7 @@ static void disasmR(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl)
 
     //set control signals
     ctrl.ctrlSignals.regWrite = 1;
-    ctrl.ctrlSignals.memToReg = 1;
+    ctrl.ctrlSignals.WBSel = 1;
     ctrl.ctrlSignals.memRead = 0;
     ctrl.ctrlSignals.aluASrc = 0;
     ctrl.ctrlSignals.aluBSrc = 0;
@@ -171,14 +171,14 @@ static void disasmI(const std::unique_ptr<instruction>& insn, const int32_t opco
     
     ctrl.ctrlSignals.regWrite = 1;
     ctrl.ctrlSignals.aluBSrc = 1;
-    ctrl.ctrlSignals.branch = 0;
     ctrl.ctrlSignals.memWrite = 0;
 
 
     if(opcode == 0x3){
         ctrl.ctrlSignals.aluASrc = 0;
-        ctrl.ctrlSignals.memToReg = 0;
+        ctrl.ctrlSignals.WBSel = 0;
         ctrl.ctrlSignals.memRead = 1;
+        ctrl.ctrlSignals.branch = 0;
         ctrl.ctrlSignals.ALUOP = 0b00;
         switch(insn->funct3){
             case 0x0:
@@ -197,8 +197,9 @@ static void disasmI(const std::unique_ptr<instruction>& insn, const int32_t opco
     }
     else if (opcode == 0x13){
         ctrl.ctrlSignals.aluASrc = 0;
-        ctrl.ctrlSignals.memToReg = 1;
+        ctrl.ctrlSignals.WBSel = 1;
         ctrl.ctrlSignals.memRead = 0;
+        ctrl.ctrlSignals.branch = 0;
         ctrl.ctrlSignals.ALUOP = 0b10;
         switch (insn->funct3)
         {
@@ -246,7 +247,11 @@ static void disasmI(const std::unique_ptr<instruction>& insn, const int32_t opco
     }
     else if (opcode == 0x67){
         //NEED TO SET THE CONTROL SIGNALS, WILL CROSS THE ROAD LATER
-        ctrl.ctrlSignals.aluASrc = 1;
+        ctrl.ctrlSignals.aluASrc = 0;
+        ctrl.ctrlSignals.branch = 2;
+        ctrl.ctrlSignals.WBSel = 2;
+        ctrl.ctrlSignals.ALUOP = 0b00;
+        ctrl.ctrlSignals.memRead = 0;
         insn->operation = mnemonic::JALR;
     }
     insn->rs1 = getRs1(insn->machineCode);
@@ -257,8 +262,8 @@ static void disasmS(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl)
     insn->funct3 = getFunct3(insn->machineCode);
 
     ctrl.ctrlSignals.regWrite = 0;
-    ctrl.ctrlSignals.memToReg = 0;
-    ctrl.ctrlSignals.memRead = 1;
+    ctrl.ctrlSignals.WBSel = 0;
+    ctrl.ctrlSignals.memRead = 0;
     ctrl.ctrlSignals.aluASrc = 0;
     ctrl.ctrlSignals.aluBSrc = 1;
     ctrl.ctrlSignals.branch = 0;
@@ -288,10 +293,10 @@ static void disasmSB(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl
     insn->funct3 = getFunct3(insn->machineCode);
 
     ctrl.ctrlSignals.regWrite = 0;
-    ctrl.ctrlSignals.memToReg = 0;
+    ctrl.ctrlSignals.WBSel = 0;
     ctrl.ctrlSignals.memRead = 0;
     ctrl.ctrlSignals.aluASrc = 0;
-    ctrl.ctrlSignals.aluBSrc = 1;
+    ctrl.ctrlSignals.aluBSrc = 0;
     ctrl.ctrlSignals.branch = 1;
     ctrl.ctrlSignals.memWrite = 0;
     ctrl.ctrlSignals.ALUOP = 0b01;
@@ -320,13 +325,13 @@ static void disasmSB(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl
 
 static void disasmUJ(const std::unique_ptr<instruction>& insn, ControlUnit &ctrl){
     ctrl.ctrlSignals.regWrite = 1;
-    ctrl.ctrlSignals.memToReg = 2;
+    ctrl.ctrlSignals.WBSel = 2;
     ctrl.ctrlSignals.memRead = 0;
     ctrl.ctrlSignals.aluASrc = 1;
     ctrl.ctrlSignals.aluBSrc = 1;
-    ctrl.ctrlSignals.branch = 1;
+    ctrl.ctrlSignals.branch = 2;
     ctrl.ctrlSignals.memWrite = 0;
-    ctrl.ctrlSignals.ALUOP = 0b01;
+    ctrl.ctrlSignals.ALUOP = 0b00;
 
     insn->operation = mnemonic::JAL;
     insn->rd = getRd(insn->machineCode);
@@ -362,6 +367,6 @@ std::unique_ptr<instruction> Decoder::disassemble(int32_t machineCode, ControlUn
         insn->insnType = type::UJ;
         disasmUJ(insn, ctrl);
     }
-    // printInsn(insn);
+    printInsn(insn);
     return insn;
 }

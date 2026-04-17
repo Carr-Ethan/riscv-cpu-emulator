@@ -36,7 +36,7 @@ class Memory {
 
 struct ControlSignals {
     int8_t regWrite;
-    int8_t memToReg;
+    int8_t WBSel;
     int8_t memWrite;
     int8_t branch;
     int8_t memRead;
