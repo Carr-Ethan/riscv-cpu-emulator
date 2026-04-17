@@ -52,7 +52,7 @@ int main(){
     CPU cpuB;
     cpuB.iMem = iMem2;
     
-    cpuA.initTest2();
+    cpuB.initTest2();
     while(true){
         cpuB.tick();
         if(cpuB.pc >= cpuB.iMem.size()*4) break;

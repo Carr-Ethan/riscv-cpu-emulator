@@ -367,6 +367,6 @@ std::unique_ptr<instruction> Decoder::disassemble(int32_t machineCode, ControlUn
         insn->insnType = type::UJ;
         disasmUJ(insn, ctrl);
     }
-    printInsn(insn);
+    // printInsn(insn);
     return insn;
 }

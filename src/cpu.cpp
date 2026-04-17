@@ -39,7 +39,6 @@ ALU::result CPU::execute(instruction insn, int32_t readData1, int32_t readData2)
         next_pc = aluRes.val;
     }
 
-    std::cout << "next_pc " << next_pc << std::endl;
     return aluRes;
 }
 
@@ -48,6 +47,7 @@ int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
     int8_t memWrite = control.ctrlSignals.memWrite;
 
     int32_t readDataDmem = 0;
+
 
     if (memWrite == 1) {
         memory.store(static_cast<int8_t>(aluRes.val), readData2);
@@ -59,7 +59,6 @@ int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
     if (memRead == 1) {
         readDataDmem = memory.load(static_cast<int8_t>(aluRes.val));
     }
-    std::cout << "aluRes: " << aluRes.val << std::endl;
 
 
     if(control.ctrlSignals.WBSel == 0){
