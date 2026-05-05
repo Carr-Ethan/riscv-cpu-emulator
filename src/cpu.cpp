@@ -8,6 +8,7 @@
 
 CPU::CPU(){
     pc = 0;
+    global_ticks = 0;
 }
 
 int32_t CPU::fetch(std::vector<std::string> iMem, int32_t pc){
@@ -23,37 +24,52 @@ std::unique_ptr<instruction> CPU::decode(int32_t machineCode) {
 }
 
 ALU::result CPU::execute(instruction insn, int32_t readData1, int32_t readData2) {
-    int32_t aluOpB = control.ctrlSignals.aluSrc ? insn.immi : readData2;
+    int32_t aluOpB = control.ctrlSignals.aluBSrc ? insn.immi : readData2;
+    int32_t aluOpA = control.ctrlSignals.aluASrc ? pc : readData1;
 
     aluCtrlOp aluCtrl = control.aluCtrl(control.ctrlSignals.ALUOP, insn);
-    ALU::result aluRes = alu.execute(readData1, aluOpB, aluCtrl);
+    ALU::result aluRes = alu.execute(aluOpA, aluOpB, aluCtrl);
+    bool branch = static_cast<bool>(control.ctrlSignals.branch) && aluRes.aluZero;
 
-    bool branch = control.ctrlSignals.branch && aluRes.aluZero;
-    int32_t branchTarget = pc + insn.immi;
 
-    if (branch) next_pc = branchTarget;
-    pc = next_pc;
+    if(branch){
+        next_pc = pc + insn.immi;
+    }
+    if(control.ctrlSignals.branch == 2){
+        next_pc = aluRes.val;
+    }
 
     return aluRes;
 }
 
 int32_t CPU::mem(ALU::result aluRes, int32_t readData2) {
-    bool memRead = control.ctrlSignals.memRead;
-    bool memWrite = control.ctrlSignals.memWrite;
+    int8_t memRead = control.ctrlSignals.memRead;
+    int8_t memWrite = control.ctrlSignals.memWrite;
 
     int32_t readDataDmem = 0;
 
-    if (memWrite) {
+
+    if (memWrite == 1) {
         memory.store(static_cast<int8_t>(aluRes.val), readData2);
         std::cout << "memory 0x" << std::hex << aluRes.val << " is modified to 0x" << readData2 << "\n";
         return 0;
     }
 
-    if (memRead) {
+
+    if (memRead == 1) {
         readDataDmem = memory.load(static_cast<int8_t>(aluRes.val));
     }
 
-    return control.ctrlSignals.memToReg ? readDataDmem : aluRes.val;
+
+    if(control.ctrlSignals.WBSel == 0){
+        return readDataDmem;
+    }
+    else if (control.ctrlSignals.WBSel == 1){
+        return aluRes.val;
+    }
+    else {
+        return pc + 4;
+    }
 }
 
 void CPU::writeback(int32_t rd, int32_t val) {
@@ -61,6 +77,7 @@ void CPU::writeback(int32_t rd, int32_t val) {
         std::cout << "x" << rd << " is modified to 0x" << std::hex << val << std::dec << std::endl;
         rf.write(rd, val);
     }
+    pc = next_pc;
 }
 
 void CPU::initTest1(){
@@ -71,6 +88,14 @@ void CPU::initTest1(){
 
     memory.store(0x70, 0x5);
     memory.store(0x74, 0x10);
+}
+
+void CPU::initTest2(){
+    rf.write(8, 0x20);
+    rf.write(10, 0x5);
+    rf.write(11, 0x2);
+    rf.write(12, 0xa);
+    rf.write(13, 0xf);
 }
 
 void CPU::tick(){
