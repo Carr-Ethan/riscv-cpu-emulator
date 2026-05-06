@@ -29,9 +29,8 @@ int main(){
     cpuA.iMem = iMem1;
     
     cpuA.initTest1();
-    while(true){
+    while(!cpuA.isDone()){
         cpuA.tick();
-        if(cpuA.pc >= cpuA.iMem.size()*4) break;
     }
 
     std::cout << "program terminated:\ntotal execution time is " << cpuA.global_ticks << " cycles" << std::endl;
@@ -53,9 +52,8 @@ int main(){
     cpuB.iMem = iMem2;
     
     cpuB.initTest2();
-    while(true){
+    while(!cpuB.isDone()){
         cpuB.tick();
-        if(cpuB.pc >= cpuB.iMem.size()*4) break;
     }
 
     std::cout << "program terminated:\ntotal execution time is " << cpuB.global_ticks << " cycles" << std::endl;
