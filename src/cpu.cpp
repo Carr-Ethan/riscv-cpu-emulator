@@ -114,7 +114,7 @@ void CPU::mem_stage() {
         memory.store(static_cast<int8_t>(ex_mem.aluVal), ex_mem.readData2);
         std::cout << "total_clock_cycles " << global_ticks << ":\n";
         std::cout << "memory 0x" << std::hex << ex_mem.aluVal << " is modified to 0x" << ex_mem.readData2 << std::dec << "\n";
-        std::cout << "pc is modified to 0x" << std::hex << pc << std::dec << "\n\n";
+        std::cout << "pc is modified to 0x" << std::hex << nextData.pc+4 << std::dec << "\n\n";
     }
 
     if (ex_mem.ctrlSignals.memRead == 1) {
@@ -128,6 +128,7 @@ void CPU::mem_stage() {
 
 void CPU::writeback() {
     auto mem_wb = MEM_WB.read();
+    std::cout << "total_clock_cycles " << global_ticks << ":\n";
 
     if (mem_wb.ctrlSignals.regWrite == 1 && mem_wb.rd != 0) {
         int32_t resultData = 0;
@@ -140,10 +141,9 @@ void CPU::writeback() {
         }
 
         rf.write(mem_wb.rd, resultData);
-        std::cout << "total_clock_cycles " << global_ticks << ":\n";
         std::cout << "x" << (int)mem_wb.rd << " is modified to 0x" << std::hex << resultData << std::dec << std::endl;
-        std::cout << "pc is modified to 0x" << std::hex << pc << std::dec << "\n\n";
     }
+    std::cout << "pc is modified to 0x" << std::hex << mem_wb.pc+4 << std::dec << "\n\n";
 }
 
 void CPU::initTest1(){
